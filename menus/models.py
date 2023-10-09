@@ -19,7 +19,7 @@ def ingredient_image_path(instance, file_name):
 
 class Category(models.Model):
     name = models.CharField(max_length=50)
-    image = models.ImageField(upload_to="images/{self.name}/", null=True, blank=True)
+    image = models.ImageField(upload_to="images/categories/", null=True, blank=True)
 
     def __str__(self):
         return f"{self.name}"
