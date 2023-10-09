@@ -11,9 +11,15 @@ COMPONENT_CHOICES = [
     ("Can", "Can"),
 ]
 
+def item_image_path(instance, file_name):
+    return f"images/{instance.category}/{instance.name}/{file_name}"
+
+def ingredient_image_path(instance, file_name):
+    return f"images/ingredient/{instance.ingredient}/{instance.type}/{file_name}"
+
 class Category(models.Model):
     name = models.CharField(max_length=50)
-    image = models.ImageField(upload_to=None)
+    image = models.ImageField(upload_to="images/{self.name}/", null=True, blank=True)
 
     def __str__(self):
         return f"{self.name}"
@@ -22,6 +28,7 @@ class ComponentChoises(models.Model):
     name = models.CharField(max_length=100)
     type = models.CharField(max_length=20 , choices = COMPONENT_CHOICES)
     price = models.DecimalField(max_digits=5, decimal_places=2)
+    image = models.ImageField(upload_to=ingredient_image_path, null=True, blank=True)
     ingredient = models.ForeignKey("Ingredient", on_delete=models.CASCADE)
 
     def __str__(self):
@@ -44,7 +51,7 @@ class MenuItemIngredient(models.Model):
 class MenuItem(models.Model):
     name = models.CharField(max_length=50)
     description = models.TextField()
-    image = models.ImageField(upload_to=None)
+    image = models.ImageField(upload_to=item_image_path, null=True, blank=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     ingredients = models.ManyToManyField(Ingredient, through=MenuItemIngredient)
     price = models.DecimalField(max_digits=5, decimal_places=2)
