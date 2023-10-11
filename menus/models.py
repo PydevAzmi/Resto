@@ -1,5 +1,5 @@
 from django.db import models
-
+from django.core.validators import MaxValueValidator, MinValueValidator
 # Create your models here.
 
 COMPONENT_CHOICES = [
@@ -56,7 +56,14 @@ class MenuItem(models.Model):
     ingredients = models.ManyToManyField(Ingredient, through=MenuItemIngredient)
     price = models.DecimalField(max_digits=5, decimal_places=2)
     is_sale = models.BooleanField(default=False)
-    sale_price = models.DecimalField(max_digits=5, decimal_places=2)
+    sale = models.FloatField(default=1, validators = [MaxValueValidator(1), MinValueValidator(0)], null=True,blank=True)
+    
+    @property   
+    def sale_price(self):
+        if self.is_sale:
+            return round(float(self.price) * (self.sale), 2 )
+        else:
+            return None
 
     def __str__(self):
         return f"{self.name}"

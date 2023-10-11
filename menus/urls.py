@@ -6,7 +6,7 @@ app_name = "menus"
 router = DefaultRouter()
 router.register(r"items", views.MenuItemsViewSet, basename="Menu_Items")
 router.register(r"categories", views.CategoryViewSet, basename="Menu_Categories")
-router.register(r"ItemIngredient", views.MenuItemIngredientViewSet, basename="Menu_Item_Ingredient")
+router.register(r"ingredients", views.IngredientViewSet, basename="Ingredient")
 
 urlpatterns = [
      path("", include(router.urls)),

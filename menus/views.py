@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework.viewsets import ModelViewSet
-from .models import MenuItem, Category, MenuItemIngredient
-from .serializers import CategorySerializer, MenuItemSerializer, MenuItemIngredientSerializer
+from .models import MenuItem, Category, Ingredient
+from .serializers import CategorySerializer, MenuItemSerializer, IngredientSerializer
 # Create your views here.
 
 class MenuItemsViewSet(ModelViewSet):
@@ -12,6 +12,6 @@ class CategoryViewSet(ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
-class MenuItemIngredientViewSet(ModelViewSet):
-    queryset = MenuItemIngredient.objects.all()
-    serializer_class = MenuItemIngredientSerializer
+class IngredientViewSet(ModelViewSet):
+    queryset = Ingredient.objects.all()
+    serializer_class = IngredientSerializer

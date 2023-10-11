@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import MenuItem, Category, Ingredient, MenuItemIngredient
+from .models import MenuItem, Category, Ingredient, MenuItemIngredient, ComponentChoises
 
 # Categories Serializer
 class CategorySerializer(serializers.ModelSerializer):
@@ -17,18 +17,36 @@ class ItemCategorySerializer(serializers.ModelSerializer):
         fields = (
             "id", 
             'name',)
+        
+class ComponentChoisesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ComponentChoises
+        fields = (
+            "id", 
+            'name',
+            'type',
+            'price',
+            'image',)
+        
 
 # Ingredient Serializer
 class IngredientSerializer(serializers.ModelSerializer):
+    components_choises = ComponentChoisesSerializer(many=True, source='componentchoises_set')
     class Meta:
         model = Ingredient
         fields = (
-            "id", 
-            'name',)
-
+            'id', 
+            'name',
+            'components_choises',)
+        
+class IngredientViewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Ingredient
+        fields = ('name',)
+        
 # All Menu Items Ingredients Serializers
 class MenuItemIngredientSerializer(serializers.ModelSerializer):
-    ingredient = IngredientSerializer()
+    ingredient = IngredientViewSerializer()
 
     class Meta:
         model = MenuItemIngredient
@@ -52,6 +70,7 @@ class MenuItemSerializer(serializers.ModelSerializer):
             'price', 
             'image',
             'is_sale', 
+            'sale', 
             'sale_price', 
             'ingredients',)
 
