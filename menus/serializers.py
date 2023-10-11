@@ -31,7 +31,7 @@ class ComponentChoisesSerializer(serializers.ModelSerializer):
 
 # Ingredient Serializer
 class IngredientSerializer(serializers.ModelSerializer):
-    components_choises = ComponentChoisesSerializer(many=True, source='componentchoises_set')
+    components_choises = ComponentChoisesSerializer(many=True,source='componentchoises_set', read_only =True)
     class Meta:
         model = Ingredient
         fields = (
@@ -44,21 +44,22 @@ class IngredientViewSerializer(serializers.ModelSerializer):
         model = Ingredient
         fields = ('name',)
         
-# All Menu Items Ingredients Serializers
+# Menu Items Ingredients Serializers
 class MenuItemIngredientSerializer(serializers.ModelSerializer):
-    ingredient = IngredientViewSerializer()
-
+    name = serializers.SerializerMethodField()
     class Meta:
         model = MenuItemIngredient
         fields = (
-            "id", 
-            'ingredient', 
+            'name', 
             'quantity',)
+        
+    def get_name(self, obj):
+        return obj.ingredient.name
 
 # Items With All Information
 class MenuItemSerializer(serializers.ModelSerializer):
-    category = ItemCategorySerializer()
-    ingredients = MenuItemIngredientSerializer(many=True, source='menuitemingredient_set')
+    category = serializers.SerializerMethodField()
+    ingredients = MenuItemIngredientSerializer(many=True, source='menuitemingredient_set', read_only= True)
 
     class Meta:
         model = MenuItem
@@ -73,4 +74,7 @@ class MenuItemSerializer(serializers.ModelSerializer):
             'sale', 
             'sale_price', 
             'ingredients',)
+        
+    def get_category(self, obj):
+        return obj.category.name
 
