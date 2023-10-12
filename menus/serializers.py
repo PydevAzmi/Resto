@@ -102,6 +102,7 @@ class MenuItemSerializer(serializers.ModelSerializer):
             ingredients_data = validated_data.pop('ingredients')
             quantity_list = validated_data.pop('quantity_list', len(ingredients_data)*"1,")
             quantity_list = quantity_list.replace(" ", "").split(",")
+
             if not self.partial:
                 MenuItemIngredient.objects.filter(menu_item = instance).all().delete()
                 for i, item_ingredient in enumerate(ingredients_data):
@@ -111,4 +112,15 @@ class MenuItemSerializer(serializers.ModelSerializer):
                         ingredient = ingredient,
                         quantity =  1 if i >= len(quantity_list) else int(quantity_list[i])
                     )
+            else:
+                print(ingredients_data)
+                for i, item_ingredient in enumerate(ingredients_data):
+                    ingredient = Ingredient.objects.get(name=item_ingredient)
+                    menu_item_ingredient, created = MenuItemIngredient.objects.get_or_create(
+                        menu_item = instance,
+                        ingredient = ingredient)
+                    
+                    menu_item_ingredient.quantity =  1 if i >= len(quantity_list) else int(quantity_list[i])
+                    menu_item_ingredient.save()
+                    
         return super().update(instance, validated_data)
