@@ -59,7 +59,7 @@ class MenuItemSerializer(serializers.ModelSerializer):
     #  Read/Write Ingredient
     ingredients = serializers.MultipleChoiceField(choices = ingredients_queryset ,write_only = True)
     item_ingredients = MenuItemIngredientSerializer(many = True, source = 'menuitemingredient_set', read_only = True)
-    extra_data = serializers.CharField(write_only = True, required = False)
+    quantity_list = serializers.CharField(write_only = True, required = False)
     class Meta:
         model = MenuItem
         fields = (
@@ -75,26 +75,40 @@ class MenuItemSerializer(serializers.ModelSerializer):
             'sale_price', 
             'item_ingredients',
             'ingredients',
-            "extra_data")
+            "quantity_list")
         
     def get_item_category(self, obj):
         return obj.category.name
     
     def create(self, validated_data):
         ingredients_data = validated_data.pop('ingredients')
-        extra_data = validated_data.pop('extra_data')
-        extra_data = extra_data.replace(" ", "").split(",")
+        quantity_list = validated_data.pop('quantity_list', len(ingredients_data)*"1,") 
+        quantity_list = quantity_list.replace(" ", "").split(",")
 
         menu_item = MenuItem.objects.create(**validated_data)
         for i, item_ingredient in enumerate(ingredients_data):
-                print(item_ingredient)
                 ingredient = Ingredient.objects.get(name=item_ingredient)
-                print(extra_data[i])
                 # Add menu item ingredient with the correct relationship
                 MenuItemIngredient.objects.create(
                     menu_item = menu_item,
                     ingredient = ingredient,
-                    quantity = extra_data[i]
+                    quantity =  1 if i >= len(quantity_list) else int(quantity_list[i])
                 )
-
         return menu_item
+    
+
+    def update(self, instance, validated_data):
+        if validated_data['ingredients']:
+            ingredients_data = validated_data.pop('ingredients')
+            quantity_list = validated_data.pop('quantity_list', len(ingredients_data)*"1,")
+            quantity_list = quantity_list.replace(" ", "").split(",")
+            if not self.partial:
+                MenuItemIngredient.objects.filter(menu_item = instance).all().delete()
+                for i, item_ingredient in enumerate(ingredients_data):
+                    ingredient = Ingredient.objects.get(name=item_ingredient)
+                    MenuItemIngredient.objects.create(
+                        menu_item = instance,
+                        ingredient = ingredient,
+                        quantity =  1 if i >= len(quantity_list) else int(quantity_list[i])
+                    )
+        return super().update(instance, validated_data)
