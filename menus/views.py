@@ -11,7 +11,6 @@ class MenuItemsViewSet(ModelViewSet):
 class CategoryViewSet(ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    lookup_field = "name"
 
 class IngredientViewSet(ModelViewSet):
     queryset = Ingredient.objects.all()

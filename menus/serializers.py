@@ -10,14 +10,6 @@ class CategorySerializer(serializers.ModelSerializer):
             "name",
             "image")
 
-# Category Serializer for Each Item
-class ItemCategorySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Category
-        fields = (
-            "id", 
-            'name',)
-        
 class ComponentChoisesSerializer(serializers.ModelSerializer):
     class Meta:
         model = ComponentChoises
@@ -31,7 +23,7 @@ class ComponentChoisesSerializer(serializers.ModelSerializer):
 
 # Ingredient Serializer
 class IngredientSerializer(serializers.ModelSerializer):
-    components_choises = ComponentChoisesSerializer(many=True,source='componentchoises_set', read_only =True)
+    components_choises = ComponentChoisesSerializer(many = True, source = 'componentchoises_set', read_only = True)
     class Meta:
         model = Ingredient
         fields = (
@@ -56,25 +48,53 @@ class MenuItemIngredientSerializer(serializers.ModelSerializer):
     def get_name(self, obj):
         return obj.ingredient.name
 
-# Items With All Information
 class MenuItemSerializer(serializers.ModelSerializer):
-    category = serializers.SerializerMethodField()
-    ingredients = MenuItemIngredientSerializer(many=True, source='menuitemingredient_set', read_only= True)
+    category_queryset = Category.objects.all()
+    ingredients_queryset = Ingredient.objects.all()
 
+    #  Read/Write Category
+    category = serializers.ChoiceField(choices = category_queryset, write_only = True)
+    item_category = serializers.SerializerMethodField()
+    
+    #  Read/Write Ingredient
+    ingredients = serializers.MultipleChoiceField(choices = ingredients_queryset ,write_only = True)
+    item_ingredients = MenuItemIngredientSerializer(many = True, source = 'menuitemingredient_set', read_only = True)
+    extra_data = serializers.CharField(write_only = True, required = False)
     class Meta:
         model = MenuItem
         fields = (
             'id', 
             'name', 
             'description', 
+            'item_category', 
             'category', 
             'price', 
             'image',
             'is_sale', 
             'sale', 
             'sale_price', 
-            'ingredients',)
+            'item_ingredients',
+            'ingredients',
+            "extra_data")
         
-    def get_category(self, obj):
+    def get_item_category(self, obj):
         return obj.category.name
+    
+    def create(self, validated_data):
+        ingredients_data = validated_data.pop('ingredients')
+        extra_data = validated_data.pop('extra_data')
+        extra_data = extra_data.replace(" ", "").split(",")
 
+        menu_item = MenuItem.objects.create(**validated_data)
+        for i, item_ingredient in enumerate(ingredients_data):
+                print(item_ingredient)
+                ingredient = Ingredient.objects.get(name=item_ingredient)
+                print(extra_data[i])
+                # Add menu item ingredient with the correct relationship
+                MenuItemIngredient.objects.create(
+                    menu_item = menu_item,
+                    ingredient = ingredient,
+                    quantity = extra_data[i]
+                )
+
+        return menu_item

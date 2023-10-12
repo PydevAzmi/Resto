@@ -43,7 +43,7 @@ class Ingredient(models.Model):
 class MenuItemIngredient(models.Model):
     ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
     menu_item = models.ForeignKey('MenuItem', on_delete=models.CASCADE)
-    quantity = models.PositiveIntegerField(null=True, blank=True)
+    quantity = models.PositiveIntegerField(null=True, blank=True, default=1)
 
     def __str__(self):
         return f"{self.menu_item} - {self.quantity} {self.ingredient}"
@@ -61,7 +61,7 @@ class MenuItem(models.Model):
     @property   
     def sale_price(self):
         if self.is_sale:
-            return round(float(self.price) * (self.sale), 2 )
+            return round(float(self.price) * (self.sale))
         else:
             return None
 
