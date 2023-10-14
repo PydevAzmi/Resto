@@ -7,7 +7,7 @@ from menus.models import MenuItem
 ORDER_STATUS = (
     ("In_Progress","In_Progress"),
     ("Submited","Submited"),
-    ("Completed","Completed"),
+    ("Canceled","Canceled"),
     ("Delivered","Delivered"),
     )
 
@@ -24,6 +24,7 @@ class Order(models.Model):
     received_at = models.DateTimeField(null= True, blank= True)
     is_delivery = models.BooleanField(default = True)
     total = models.DecimalField(max_digits=5, decimal_places=2, null= True, blank= True)
+    tax = models.DecimalField(max_digits=5, decimal_places=2, null= True, blank= True)
 
     def __str__(self):
         return f"{self.user} - {self.code}"
@@ -52,7 +53,7 @@ class Cart(models.Model):
     @property
     def total_price(self):
         total = 0
-        for item in self.objects.select_related("order").item:
+        for item in self.objects.select_related("order").all():
             total += item.price
         return total
 
