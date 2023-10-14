@@ -57,6 +57,7 @@ class MenuItem(models.Model):
     ingredients = models.ManyToManyField(Ingredient, through=MenuItemIngredient)
     price = models.DecimalField(max_digits=5, decimal_places=2)
     is_sale = models.BooleanField(default=False)
+    is_fav = models.BooleanField(default=False)
     sale = models.FloatField(default=0, validators = [MaxValueValidator(1), MinValueValidator(0)], null=True,blank=True)
     
     @property   
