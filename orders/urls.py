@@ -1,14 +1,10 @@
 from django.urls import path, include
-from rest_framework.routers import DefaultRouter
 from . import views
 app_name = "orders"
 
-router = DefaultRouter()
-router.register(r"cart",views.CartViewSetApi ,basename="cart" )
-router.register(r"cart_item",views.CartItemDetailViewSetApi ,basename="cart_item" )
-router.register(r"order",views.OrderViewSetApi ,basename="order" )
-router.register(r"order_item",views.OrderItemDetailViewSetApi ,basename="order_item" )
-
 urlpatterns = [
-    path("", include(router.urls)),
+    path("cart-item", views.CartItemDetailViewApi.as_view(), name= "cart-items-list" ),
+    path("cart", views.CartViewApi.as_view(), name= "cart-list" ),
+    path("order-item", views.OrderItemDetailViewApi.as_view(), name= "order-items-list" ),
+    path("order", views.OrderViewApi.as_view(), name= "order-list" ),
 ]

@@ -1,25 +1,25 @@
-from rest_framework import viewsets
+from rest_framework import generics
 from .serializers import CartItemDetailSerailizer, CartSerailizer, OrderItemDetailSerailizer, OrderSerailizer
 from .models import Cart, CartItemDetail, Order, OrderItemDetail
 # Create your views here.
 
 
-class CartItemDetailViewSetApi(viewsets.ModelViewSet):
+class CartItemDetailViewApi(generics.ListAPIView):
     queryset = CartItemDetail.objects.all()
     serializer_class= CartItemDetailSerailizer
     
 
-class CartViewSetApi(viewsets.ModelViewSet):
+class CartViewApi(generics.ListAPIView):
     queryset = Cart.objects.all()
     serializer_class= CartSerailizer
 
 
-class OrderItemDetailViewSetApi(viewsets.ModelViewSet):
+class OrderItemDetailViewApi(generics.ListAPIView):
     queryset = OrderItemDetail.objects.all()
     serializer_class= OrderItemDetailSerailizer
 
 
-class OrderViewSetApi(viewsets.ModelViewSet):
+class OrderViewApi(generics.ListAPIView):
     queryset = Order.objects.all()
     serializer_class= OrderSerailizer
 
