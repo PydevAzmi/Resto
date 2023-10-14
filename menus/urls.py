@@ -8,6 +8,9 @@ router.register(r"items", views.MenuItemsViewSet, basename="Menu_Items")
 router.register(r"categories", views.CategoryViewSet, basename="Menu_Categories")
 router.register(r"ingredients", views.IngredientViewSet, basename="Ingredient")
 
+
 urlpatterns = [
      path("", include(router.urls)),
+     path("favorites/", views.FavouriteListCreateAPI, name="favorites"),
+     path("favorites/<int:pk>", views.FavouriteRetrieveDestroyAPI, name="favorites-instance"),
 ]

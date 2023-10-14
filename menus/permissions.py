@@ -2,7 +2,7 @@ from rest_framework import permissions
 
 class IsAdminOrReadOnly(permissions.BasePermission):
     """
-    Check if Patient is author of the Survey.
+    Check if the user is a staff member! 
     """
     def has_permission(self, request, view):
         if request.method in permissions.SAFE_METHODS:
@@ -13,3 +13,10 @@ class IsAdminOrReadOnly(permissions.BasePermission):
         if request.method in permissions.SAFE_METHODS:
             return True
         return request.user.is_staff
+    
+class IsMine(permissions.BasePermission):
+    """
+    Check if the user prefers the item.
+    """
+    def has_object_permission(self, request, view, obj):
+        return obj.user == request.user

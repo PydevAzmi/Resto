@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import MenuItem, Category, Ingredient, MenuItemIngredient, ComponentChoises
+from .models import MenuItem, Category, Ingredient, MenuItemIngredient, ComponentChoises, Favourites
 
 # Categories Serializer
 class CategorySerializer(serializers.ModelSerializer):
@@ -8,7 +8,7 @@ class CategorySerializer(serializers.ModelSerializer):
         fields =(
             "id",
             "name",
-            "image")
+            "image",)
 
 class ComponentChoisesSerializer(serializers.ModelSerializer):
     class Meta:
@@ -55,11 +55,14 @@ class MenuItemSerializer(serializers.ModelSerializer):
     #  Read/Write Category
     category = serializers.ChoiceField(choices = category_queryset, write_only = True)
     item_category = serializers.SerializerMethodField()
-    
+
     #  Read/Write Ingredient
     ingredients = serializers.MultipleChoiceField(choices = ingredients_queryset ,write_only = True)
     item_ingredients = MenuItemIngredientSerializer(many = True, source = 'menuitemingredient_set', read_only = True)
     quantity_list = serializers.CharField(write_only = True, required = False)
+
+    is_fav = serializers.SerializerMethodField()
+
     class Meta:
         model = MenuItem
         fields = (
@@ -73,13 +76,21 @@ class MenuItemSerializer(serializers.ModelSerializer):
             'is_sale', 
             'sale', 
             'sale_price', 
+            'is_fav', 
             'item_ingredients',
             'ingredients',
-            "quantity_list")
+            "quantity_list",)
         
     def get_item_category(self, obj):
         return obj.category.name
     
+    def get_is_fav(self, obj):
+        user = self.context['request'].user
+        if Favourites.objects.filter(user=user, item = obj).exists():
+            return True
+        return False
+    
+
     def create(self, validated_data):
         ingredients_data = validated_data.pop('ingredients')
         quantity_list = validated_data.pop('quantity_list', len(ingredients_data)*"1,") 
@@ -100,6 +111,7 @@ class MenuItemSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         if validated_data['ingredients']:
             ingredients_data = validated_data.pop('ingredients')
+            # clean the quantity list
             quantity_list = validated_data.pop('quantity_list', len(ingredients_data)*"1,")
             quantity_list = quantity_list.replace(" ", "").split(",")
 
@@ -113,7 +125,6 @@ class MenuItemSerializer(serializers.ModelSerializer):
                         quantity =  1 if i >= len(quantity_list) else int(quantity_list[i])
                     )
             else:
-                print(ingredients_data)
                 for i, item_ingredient in enumerate(ingredients_data):
                     ingredient = Ingredient.objects.get(name=item_ingredient)
                     menu_item_ingredient, created = MenuItemIngredient.objects.get_or_create(
@@ -124,3 +135,12 @@ class MenuItemSerializer(serializers.ModelSerializer):
                     menu_item_ingredient.save()
                     
         return super().update(instance, validated_data)
+    
+class FavouriteSerializer(serializers.ModelSerializer):
+    item_name = serializers.SerializerMethodField()
+    class Meta:
+        model = Favourites
+        fields = ("pk","item","item_name")
+        
+    def get_item_name (self, obj):
+        return obj.item.name

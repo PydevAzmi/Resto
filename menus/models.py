@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 from django.core.validators import MaxValueValidator, MinValueValidator
 # Create your models here.
 
@@ -36,7 +37,7 @@ class ComponentChoises(models.Model):
 
 class Ingredient(models.Model):
     name = models.CharField(max_length=50)
-
+    is_optional = models.BooleanField(default=False)
     def __str__(self):
         return f"{self.name}"
 
@@ -56,14 +57,23 @@ class MenuItem(models.Model):
     ingredients = models.ManyToManyField(Ingredient, through=MenuItemIngredient)
     price = models.DecimalField(max_digits=5, decimal_places=2)
     is_sale = models.BooleanField(default=False)
-    sale = models.FloatField(default=1, validators = [MaxValueValidator(1), MinValueValidator(0)], null=True,blank=True)
+    sale = models.FloatField(default=0, validators = [MaxValueValidator(1), MinValueValidator(0)], null=True,blank=True)
     
     @property   
     def sale_price(self):
         if self.is_sale:
-            return round(float(self.price) * (self.sale))
+            return self.price - round(float(self.price) * (self.sale))
         else:
             return None
 
     def __str__(self):
         return f"{self.name}"
+
+
+class Favourites(models.Model):
+    item = models.ForeignKey(MenuItem, related_name="fav_item", on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    
+    def __str__(self):
+        return f"{self.user} Likes {self.item}"
+    
