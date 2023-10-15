@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.contrib.auth.models import AnonymousUser
 from .models import MenuItem, Category, Ingredient, MenuItemIngredient, ComponentChoises, Favourites
 
 # Categories Serializer
@@ -97,9 +98,10 @@ class MenuItemSerializer(serializers.ModelSerializer):
         return obj.category.name
     
     def get_is_fav(self, obj):
-        user = self.context['request'].user
-        if Favourites.objects.filter(user=user, item = obj).exists():
-            return True
+        user = self.context['request'].user 
+        if not isinstance(user, AnonymousUser):
+            if Favourites.objects.filter(user=user, item = obj).exists():
+                return True
         return False
     
 
