@@ -20,6 +20,17 @@ class ComponentChoisesSerializer(serializers.ModelSerializer):
             'price',
             'image',)
         
+class ComponentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ComponentChoises
+        fields = (
+            "id", 
+            'ingredient',
+            'name',
+            'type',
+            'price',
+            'image',
+           )     
 
 # Ingredient Serializer
 class IngredientSerializer(serializers.ModelSerializer):
@@ -29,6 +40,7 @@ class IngredientSerializer(serializers.ModelSerializer):
         fields = (
             'id', 
             'name',
+            'is_optional',
             'components_choises',)
         
 class IngredientViewSerializer(serializers.ModelSerializer):

@@ -7,6 +7,7 @@ router = DefaultRouter()
 router.register(r"items", views.MenuItemsViewSet, basename="Menu_Items")
 router.register(r"categories", views.CategoryViewSet, basename="Menu_Categories")
 router.register(r"ingredients", views.IngredientViewSet, basename="Ingredient")
+router.register(r"componnents", views.ComponnentApiView, basename="Components")
 
 
 urlpatterns = [

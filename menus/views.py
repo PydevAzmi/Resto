@@ -3,8 +3,8 @@ from rest_framework.viewsets import ModelViewSet
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, generics, mixins
 from .permissions import IsAdminOrReadOnly, IsMine
-from .models import MenuItem, Category, Ingredient, Favourites
-from .serializers import CategorySerializer, MenuItemSerializer, IngredientSerializer, FavouriteSerializer
+from .models import MenuItem, Category, Ingredient, Favourites, ComponentChoises
+from .serializers import CategorySerializer, MenuItemSerializer, IngredientSerializer, FavouriteSerializer, ComponentSerializer
 # Create your views here.
 
 class PermissionView(ModelViewSet):
@@ -76,3 +76,9 @@ class FavouriteRetrieveDestroyAPIView(
         return self.destroy(request, *args, **kwargs)
     
 FavouriteRetrieveDestroyAPI = FavouriteRetrieveDestroyAPIView.as_view()
+
+
+class ComponnentApiView(PermissionView):
+    queryset = ComponentChoises.objects.all()
+    serializer_class= ComponentSerializer
+    filterset_fields = ['ingredient']
