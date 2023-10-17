@@ -1,7 +1,9 @@
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User 
+from django.contrib.auth import get_user_model
+from django.contrib.auth.signals import user_logged_in
 from .utils import generate_code
 from menus.models import MenuItem, Ingredient,MenuItemIngredient, ComponentChoises, COMPONENT_CHOICES
 
@@ -62,6 +64,19 @@ class Cart(models.Model):
     def __str__(self):
         return f"{self.user} - {self.code}"
     
+@receiver(user_logged_in, sender=get_user_model())
+def user_logged_in_handler(sender, request, user, **kwargs):
+    if not Cart.objects.filter(user=user, status='In_Progress').exists():
+        Cart.objects.create(user=user, status='In_Progress')
+
+@receiver(post_save, sender=Cart)
+def create_new_cart_on_submit(sender, instance, created, **kwargs):
+    if instance.status == 'Submited':
+        Cart.objects.create(user=instance.user, status='In_Progress')
+
+@receiver(post_delete, sender=Cart)
+def create_new_cart_on_delete(sender, instance, **kwargs):
+    Cart.objects.create(user=instance.user, status='In_Progress')
 
 class CartItemDetail(models.Model):
     cart = models.ForeignKey(Cart, related_name="cart", on_delete=models.CASCADE)
@@ -73,7 +88,7 @@ class CartItemDetail(models.Model):
         text = ''
         for obj in Customization.objects.filter(cart_item = self).all():
             if obj.component and not None:
-                text += f"{obj.ingredient.name} : {obj.component.type}, "
+                text += f"({obj.ingredient.name} : {obj.component.type}), "
         return text
     
     @property
@@ -107,3 +122,9 @@ def create_customizations(sender, instance, created, **kwargs):
                     Customization.objects.create(cart_item=instance, ingredient=ingredient, component = default)
                 else:
                     Customization.objects.create(cart_item=instance, ingredient=ingredient)
+
+class SpecialInstructions(models.Model):
+    instraction = models.CharField(max_length=100)
+    save_for_future = models.BooleanField(default=False)
+    cart = models.ForeignKey(Cart, related_name="cart_instructions", on_delete=models.CASCADE)
+    
