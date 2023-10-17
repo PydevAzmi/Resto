@@ -54,13 +54,23 @@ class CartSerailizer(serializers.ModelSerializer):
     class Meta:
         model = Cart
         fields = (
+            "id",
             "user",
             "status",
             "total_price",
             "code",
             "cart_items"
             )
-
+        
+class CartSubmitSerailizer(serializers.ModelSerializer):
+    cart_items = CartItemDetailSerailizer(many = True, source="cart", read_only = True) 
+    class Meta:
+        model = Cart
+        fields = (
+            "status",
+            "cart_items",
+        )
+        
 class OrderItemDetailSerailizer(serializers.ModelSerializer):
     class Meta:
         model = OrderItemDetail
