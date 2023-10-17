@@ -1,6 +1,6 @@
 from rest_framework import generics
-from .serializers import CartItemDetailSerailizer, CartSerailizer, OrderItemDetailSerailizer, OrderSerailizer
-from .models import Cart, CartItemDetail, Order, OrderItemDetail
+from .serializers import CartItemDetailSerailizer, CartSerailizer, OrderItemDetailSerailizer, OrderSerailizer, CustomizationSerializer
+from .models import Cart, CartItemDetail, Order, OrderItemDetail, Customization
 # Create your views here.
 
 
@@ -23,10 +23,6 @@ class OrderViewApi(generics.ListAPIView):
     queryset = Order.objects.all()
     serializer_class= OrderSerailizer
 
-
-"""
-cart_item_detail_view_set_api = CartItemDetailViewSetApi.as_view({'get': 'list'})
-cart_view_set_api = CartViewSetApi.as_view({'get': 'list'})
-order_item_detail_view_set_api = OrderItemDetailViewSetApi.as_view({'get': 'list'})
-order_view_set_api = OrderViewSetApi.as_view({'get': 'list'})
-"""
+class CustomizationViewApi(generics.ListAPIView):
+    queryset = Customization.objects.all()
+    serializer_class= CustomizationSerializer

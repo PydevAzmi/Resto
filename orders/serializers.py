@@ -1,19 +1,27 @@
 from rest_framework import serializers
-from .models import Cart, CartItemDetail, Order, OrderItemDetail
+from .models import Cart, CartItemDetail, Order, OrderItemDetail, Customization
 from menus.models import MenuItem, MenuItemIngredient
 from menus.serializers import ComponentChoisesSerializer
+
+class CustomizationSerializer(serializers.ModelSerializer):
+    component = ComponentChoisesSerializer()
+    class Meta:
+        model = Customization
+        fields = (
+            'component',
+        )
 
 class MenuItemIngredientSerializer(serializers.ModelSerializer):
     name = serializers.SerializerMethodField()
     is_optional = serializers.SerializerMethodField()
-    components_choises = ComponentChoisesSerializer(many = True, source = 'ingredient.componentchoises_set', read_only = True)
+    #components_choises = ComponentChoisesSerializer(many = True, source = 'ingredient.componentchoises_set')
     class Meta:
         model = MenuItemIngredient
         fields = (
             'name', 
             'quantity',
             'is_optional',
-            'components_choises',)
+            )
         
     def get_name(self, obj):
         return obj.ingredient.name
@@ -38,6 +46,7 @@ class CartItemDetailSerailizer(serializers.ModelSerializer):
             "item",
             "quantity",
             "price",
+            "details",
             )
         
 class CartSerailizer(serializers.ModelSerializer):
