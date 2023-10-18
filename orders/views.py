@@ -1,18 +1,21 @@
-from rest_framework import generics
+from rest_framework import generics, viewsets
 from .serializers import (CartItemDetailSerailizer, CartSubmitSerailizer,
                           CartSerailizer, OrderItemDetailSerailizer, 
-                          OrderSerailizer, CustomizationSerializer)
+                          OrderSerailizer, CustomizationSerializer, SpecialInstructionsSerializer)
 
-from .models import Cart, CartItemDetail, Order, OrderItemDetail, Customization
+from .models import Cart, CartItemDetail, Order, OrderItemDetail, Customization, SpecialInstructions
 from .permissions import IsOwner
 from rest_framework.permissions import IsAuthenticated
 # Create your views here.
 
-
 class CartItemDetailListAPIView(generics.ListAPIView):
-    queryset = CartItemDetail.objects.all()
     serializer_class= CartItemDetailSerailizer
+    permission_classes = [IsAuthenticated, IsOwner]
     
+    def get_queryset(self):
+        last_cart = Cart.objects.filter(user = self.request.user, status ="In_Progress").last()
+        queryset = CartItemDetail.objects.filter(cart = last_cart).all()
+        return queryset
 
 class CartListAPIView(generics.ListAPIView):
     serializer_class= CartSerailizer
@@ -39,6 +42,20 @@ class OrderViewApi(generics.ListAPIView):
     queryset = Order.objects.all()
     serializer_class= OrderSerailizer
 
-class CustomizationViewApi(generics.ListAPIView):
-    queryset = Customization.objects.all()
+class CustomizationAPIView(viewsets.ModelViewSet):
     serializer_class= CustomizationSerializer
+
+    def get_queryset(self):
+        last_cart = Cart.objects.filter(user=self.request.user, status="In_Progress").last()
+        cart_items = CartItemDetail.objects.filter(cart = last_cart)
+        queryset = Customization.objects.filter(cart_item__in = cart_items)
+        return queryset
+    
+
+class SpecialInstructionsListAPIView(generics.ListAPIView):
+    serializer_class = SpecialInstructionsSerializer
+
+    def get_queryset(self):
+        last_cart = Cart.objects.filter(user = self.request.user, status ="In_Progress").last()
+        queryset = SpecialInstructions.objects.filter(cart =last_cart )
+        return queryset
