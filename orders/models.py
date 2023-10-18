@@ -62,7 +62,7 @@ class Cart(models.Model):
         return total
 
     def __str__(self):
-        return f"{self.user} - {self.code}"
+        return f"{self.user} - {self.code} - {self.status}"
     
 @receiver(user_logged_in, sender=get_user_model())
 def user_logged_in_handler(sender, request, user, **kwargs):
@@ -74,9 +74,6 @@ def create_new_cart_on_submit(sender, instance, created, **kwargs):
     if instance.status == 'Submited':
         Cart.objects.create(user=instance.user, status='In_Progress')
 
-@receiver(post_delete, sender=Cart)
-def create_new_cart_on_delete(sender, instance, **kwargs):
-    Cart.objects.create(user=instance.user, status='In_Progress')
 
 class CartItemDetail(models.Model):
     cart = models.ForeignKey(Cart, related_name="cart", on_delete=models.CASCADE)
@@ -124,7 +121,10 @@ def create_customizations(sender, instance, created, **kwargs):
                     Customization.objects.create(cart_item=instance, ingredient=ingredient)
 
 class SpecialInstructions(models.Model):
-    instraction = models.CharField(max_length=100)
-    save_for_future = models.BooleanField(default=False)
+    instraction = models.CharField(max_length=100, null =True, blank=True)
+    save_for_future = models.BooleanField(default=False, null =True, blank=True)
+    ketchup = models.BooleanField(default=False, null =True, blank=True)
+    cutlery = models.BooleanField(default=False, null =True, blank=True)
     cart = models.ForeignKey(Cart, related_name="cart_instructions", on_delete=models.CASCADE)
+
     
