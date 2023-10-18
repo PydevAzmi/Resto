@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Cart, CartItemDetail, Order, OrderItemDetail, Customization
+from .models import Cart, CartItemDetail, Order, OrderItemDetail, Customization, SpecialInstructions
 from menus.models import MenuItem, MenuItemIngredient
 from menus.serializers import ComponentChoisesSerializer
 
@@ -8,6 +8,8 @@ class CustomizationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Customization
         fields = (
+            'id',
+            'ingredient',
             'component',
         )
 
@@ -48,9 +50,19 @@ class CartItemDetailSerailizer(serializers.ModelSerializer):
             "price",
             "details",
             )
+class SpecialInstructionsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SpecialInstructions
+        fields = (
+            'id',
+            'instraction',
+            'save_for_future',
+            'ketchup',
+            'cutlery',)
         
 class CartSerailizer(serializers.ModelSerializer):
     cart_items = CartItemDetailSerailizer(many = True, source="cart", read_only = True) 
+    cart_instructions = SpecialInstructionsSerializer(many = True, read_only = True)
     class Meta:
         model = Cart
         fields = (
@@ -59,16 +71,19 @@ class CartSerailizer(serializers.ModelSerializer):
             "status",
             "total_price",
             "code",
-            "cart_items"
+            "cart_items",
+            'cart_instructions'
             )
         
 class CartSubmitSerailizer(serializers.ModelSerializer):
-    cart_items = CartItemDetailSerailizer(many = True, source="cart", read_only = True) 
+    cart_items = CartItemDetailSerailizer(many = True, source="cart", read_only = True)
+    cart_instructions = SpecialInstructionsSerializer(many = True, read_only = True)
     class Meta:
         model = Cart
         fields = (
             "status",
             "cart_items",
+            "cart_instructions",
         )
         
 class OrderItemDetailSerailizer(serializers.ModelSerializer):
