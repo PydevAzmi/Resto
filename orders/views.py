@@ -1,36 +1,40 @@
 from rest_framework import generics, viewsets
-from .serializers import (CartItemDetailSerailizer, CartSubmitSerailizer,
-                          CartSerailizer, OrderItemDetailSerailizer, 
-                          OrderSerailizer, CustomizationSerializer, SpecialInstructionsSerializer)
-
+from .serializers import (
+    CartItemDetailSerailizer, CartUpdateSerailizer,CartSerailizer, OrderItemDetailSerailizer, 
+    OrderSerailizer, CustomizationSerializer, SpecialInstructionsSerializer
+    )
 from .models import Cart, CartItemDetail, Order, OrderItemDetail, Customization, SpecialInstructions
 from .permissions import IsOwner
 from rest_framework.permissions import IsAuthenticated
 # Create your views here.
 
-class CartItemDetailListAPIView(generics.ListAPIView):
-    serializer_class= CartItemDetailSerailizer
+class UserCartView():
     permission_classes = [IsAuthenticated, IsOwner]
+    def get_queryset(self):
+        # Retrieves only one list item, because the shopping cart is managed by signals to be created dynamically
+        queryset = Cart.objects.filter(user = self.request.user, status ="In_Progress")
+        return queryset
     
+class CartListAPIView(
+    UserCartView,
+    generics.ListAPIView):
+    serializer_class= CartSerailizer
+    
+class CartRetrieveUpdateAPIView(
+    UserCartView,
+    generics.RetrieveUpdateAPIView):
+    serializer_class= CartUpdateSerailizer
+    lookup_field = 'pk'
+
+
+class CartItemDetailListAPIView(
+    UserCartView,
+    generics.ListAPIView):
+
+    serializer_class= CartItemDetailSerailizer
     def get_queryset(self):
         last_cart = Cart.objects.filter(user = self.request.user, status ="In_Progress").last()
         queryset = CartItemDetail.objects.filter(cart = last_cart).all()
-        return queryset
-
-class CartListAPIView(generics.ListAPIView):
-    serializer_class= CartSerailizer
-    permission_classes = [IsAuthenticated, IsOwner]
-
-    def get_queryset(self):
-        queryset = Cart.objects.filter(user = self.request.user, status ="In_Progress")
-        return queryset
-    
-class CartRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
-    serializer_class= CartSubmitSerailizer
-    permission_classes = [IsAuthenticated, IsOwner]
-    lookup_field = 'pk'
-    def get_queryset(self):
-        queryset = Cart.objects.filter(user = self.request.user, status ="In_Progress")
         return queryset
 
 class OrderItemDetailViewApi(generics.ListAPIView):

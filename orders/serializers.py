@@ -2,9 +2,10 @@ from rest_framework import serializers
 from .models import Cart, CartItemDetail, Order, OrderItemDetail, Customization, SpecialInstructions
 from menus.models import MenuItem, MenuItemIngredient
 from menus.serializers import ComponentChoisesSerializer
-
+from django.shortcuts import get_object_or_404
 class CustomizationSerializer(serializers.ModelSerializer):
-    component = ComponentChoisesSerializer()
+    component = ComponentChoisesSerializer(read_only = True)
+    ingredient = serializers.SerializerMethodField(read_only = True)
     class Meta:
         model = Customization
         fields = (
@@ -12,7 +13,9 @@ class CustomizationSerializer(serializers.ModelSerializer):
             'ingredient',
             'component',
         )
-
+    def get_ingredient(self, obj):
+        return obj.ingredient.name
+    
 class MenuItemIngredientSerializer(serializers.ModelSerializer):
     name = serializers.SerializerMethodField()
     is_optional = serializers.SerializerMethodField()
@@ -75,16 +78,31 @@ class CartSerailizer(serializers.ModelSerializer):
             'cart_instructions'
             )
         
-class CartSubmitSerailizer(serializers.ModelSerializer):
+class CartUpdateSerailizer(serializers.ModelSerializer):
+    queryset = MenuItem.objects.all()
     cart_items = CartItemDetailSerailizer(many = True, source="cart", read_only = True)
+    item = serializers.ChoiceField(choices=queryset, write_only = True)
+    quantity = serializers.IntegerField(write_only = True, default= 1)
     cart_instructions = SpecialInstructionsSerializer(many = True, read_only = True)
     class Meta:
         model = Cart
         fields = (
             "status",
             "cart_items",
+            "item",
             "cart_instructions",
+            "quantity"
         )
+
+    # Only Accept Partial Update
+    def update(self, instance, validated_data):
+        if 'item' in validated_data:
+            item_name = validated_data['item']
+            item = get_object_or_404(MenuItem, name = item_name)
+            if self.partial:
+                quantity = 1 if 'quantity' not in validated_data else validated_data['quantity']
+                CartItemDetail.objects.create(cart=instance, item=item, quantity=quantity)
+        return super().update(instance, validated_data)
         
 class OrderItemDetailSerailizer(serializers.ModelSerializer):
     class Meta:
