@@ -1,5 +1,6 @@
-from rest_framework import generics, viewsets
+from rest_framework import generics
 from django.shortcuts import get_object_or_404
+from rest_framework.exceptions import ValidationError
 from .serializers import (
     CartItemSerailizer,CartItemDetailSerailizer , CartUpdateSerailizer,CartSerailizer, OrderItemDetailSerailizer, 
     OrderSerailizer, CustomizationSerializer, CustomizationUpdateSerializer, SpecialInstructionsSerializer)
@@ -69,14 +70,29 @@ class CustomizationRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
         context.update({"customization_instance": customization_instance})
         return context
     
-class SpecialInstructionsListAPIView(generics.ListAPIView):
+class SpecialInstructionsListAPIView(generics.ListCreateAPIView):
     serializer_class=SpecialInstructionsSerializer
 
     def get_queryset(self):
-        last_cart=Cart.objects.filter(user=self.request.user, status="In_Progress").last()
-        queryset=SpecialInstructions.objects.filter(cart=last_cart )
+        pk=self.kwargs['cart_pk']
+        queryset=SpecialInstructions.objects.filter(cart=pk )
         return queryset
+    
+    def perform_create(self, serializer):
+        pk = self.kwargs['cart_pk']
+        existing_special_instructions = SpecialInstructions.objects.filter(cart = pk )
+        if existing_special_instructions:
+            raise ValidationError('You can create only one Special Instructions for a single Cart.')
+        else:
+            serializer.save(cart = pk)
 
+class SpecialInstructionsRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
+    serializer_class=SpecialInstructionsSerializer
+    lookup_field = "pk"
+    def get_queryset(self):
+        pk=self.kwargs['cart_pk']
+        queryset=SpecialInstructions.objects.filter(cart=pk )
+        return queryset
 
 class OrderItemDetailViewApi(generics.ListAPIView):
     queryset=OrderItemDetail.objects.all()
