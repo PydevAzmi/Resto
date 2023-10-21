@@ -31,6 +31,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'accounts',
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -39,16 +40,20 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
 
     # Local Apps
+    
+    'api',
     'menus',
     'orders',
     'reservations',
-    'api',
+
 
     # third-party apps
     'rest_framework',
     'django_filters',
     "corsheaders",
 ]
+
+AUTH_USER_MODEL = 'accounts.User'
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
