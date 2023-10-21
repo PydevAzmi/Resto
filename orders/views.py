@@ -84,7 +84,8 @@ class SpecialInstructionsListAPIView(generics.ListCreateAPIView):
         if existing_special_instructions:
             raise ValidationError('You can create only one Special Instructions for a single Cart.')
         else:
-            serializer.save(cart = pk)
+            cart = Cart.objects.get(pk=pk, user=self.request.user)
+            serializer.save(cart=cart)
 
 class SpecialInstructionsRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
     serializer_class=SpecialInstructionsSerializer
