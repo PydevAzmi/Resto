@@ -1,3 +1,4 @@
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from django.db import models
@@ -23,12 +24,14 @@ CART_STATUS = (
 class Order(models.Model):
     code = models.CharField(max_length=15, default=generate_code(15))
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    cart = models.ForeignKey('Cart', related_name="order_cart", on_delete=models.SET_NULL, null=True, blank=True)
     status = models.CharField(max_length=20, choices=ORDER_STATUS)
     created_at = models.DateTimeField(auto_now_add=True)
     received_at = models.DateTimeField(null= True, blank= True)
     is_delivery = models.BooleanField(default = True)
     total = models.DecimalField(max_digits=5, decimal_places=2, null= True, blank= True)
-    tax = models.DecimalField(max_digits=5, decimal_places=2, null= True, blank= True)
+    tax = models.FloatField(default=0, validators = [MaxValueValidator(1), MinValueValidator(0)], null=True,blank=True)
+
 
     def __str__(self):
         return f"{self.user} - {self.code}"
@@ -39,15 +42,6 @@ class OrderItemDetail(models.Model):
     item = models.ForeignKey(MenuItem, related_name="order_item", on_delete= models.SET_NULL, null=True, blank=True)
     quantity = models.PositiveIntegerField(default = 1)
     
-    @property
-    def price(self):
-        if self.item.is_sale:
-            return (self.quantity) * (self.item.sale_price)
-        return (self.quantity) * (self.item.price)
-    
-    def __str__(self):
-        return f"{self.item} - {self.order}"
-    
 
 class Cart(models.Model):
     code = models.CharField(max_length=9, default=generate_code(9))
@@ -57,7 +51,8 @@ class Cart(models.Model):
     @property
     def total_price(self):
         total = 0
-        for item in self.objects.select_related("order").all():
+        for item in self.cart.all():
+
             total += item.price
         return total
 
@@ -70,8 +65,15 @@ def user_logged_in_handler(sender, request, user, **kwargs):
         Cart.objects.create(user=user, status='In_Progress')
 
 @receiver(post_save, sender=Cart)
-def create_new_cart_on_submit(sender, instance, created, **kwargs):
+def create_new_cart_order_on_submit(sender, instance, created, **kwargs):
     if instance.status == 'Submited':
+        Order.objects.create(
+            user=instance.user,
+            status='In_Progress',                 
+            cart = instance,
+            total= instance.total_price,
+            tax = 0.20,
+            )
         Cart.objects.create(user=instance.user, status='In_Progress')
 
 
