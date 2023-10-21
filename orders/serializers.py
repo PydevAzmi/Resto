@@ -160,23 +160,43 @@ class CartUpdateSerailizer(serializers.ModelSerializer):
 
 
 class OrderItemDetailSerailizer(serializers.ModelSerializer):
+    item = serializers.SerializerMethodField()    
     class Meta:
         model = OrderItemDetail
         fields = (
-            "order",
             "item",
-            "price",
             "quantity",
             )
-
+        
+    def get_item(self, obj):
+        return obj.item.name
 
 class OrderSerailizer(serializers.ModelSerializer):
+    order_items = OrderItemDetailSerailizer(many = True, source="order", read_only = True) 
     class Meta:
         model = Order
         fields = (
+            "id",
             "code",
-            "user",
+            "order_items",
             "status",
+            "created_at",
+            "received_at",
+            "is_delivery",
+            "total",
+            "tax",
+            )
+        
+class OrderUpdateSerailizer(serializers.ModelSerializer):
+    total = serializers.ReadOnlyField()
+    tax = serializers.ReadOnlyField()
+    code = serializers.ReadOnlyField()
+    class Meta:
+        model = Order
+        fields = (
+            "id",
+            "status",
+            "code",
             "created_at",
             "received_at",
             "is_delivery",

@@ -2,8 +2,11 @@ from rest_framework import generics
 from django.shortcuts import get_object_or_404
 from rest_framework.exceptions import ValidationError
 from .serializers import (
-    CartItemSerailizer,CartItemDetailSerailizer , CartUpdateSerailizer,CartSerailizer, OrderItemDetailSerailizer, 
-    OrderSerailizer, CustomizationSerializer, CustomizationUpdateSerializer, SpecialInstructionsSerializer)
+    CartItemSerailizer, CartItemDetailSerailizer, CartUpdateSerailizer, CartSerailizer,
+    OrderItemDetailSerailizer, OrderSerailizer, OrderUpdateSerailizer,
+    CustomizationSerializer, CustomizationUpdateSerializer,
+    SpecialInstructionsSerializer )
+
 from .models import Cart, CartItemDetail, Order, OrderItemDetail, Customization, SpecialInstructions
 from .permissions import IsOwner
 from rest_framework.permissions import IsAuthenticated
@@ -80,7 +83,7 @@ class SpecialInstructionsListAPIView(generics.ListCreateAPIView):
     
     def perform_create(self, serializer):
         pk = self.kwargs['cart_pk']
-        existing_special_instructions = SpecialInstructions.objects.filter(cart = pk )
+        existing_special_instructions = SpecialInstructions.objects.filter(cart = pk ).exists()
         if existing_special_instructions:
             raise ValidationError('You can create only one Special Instructions for a single Cart.')
         else:
@@ -99,7 +102,23 @@ class OrderItemDetailViewApi(generics.ListAPIView):
     queryset=OrderItemDetail.objects.all()
     serializer_class=OrderItemDetailSerailizer
 
-
+        
 class OrderViewApi(generics.ListAPIView):
+    permission_classes=[IsAuthenticated, IsOwner]
     queryset=Order.objects.all()
     serializer_class=OrderSerailizer
+
+    def get_queryset(self):
+        queryset=Order.objects.filter(user=self.request.user)
+        return queryset
+    
+
+class OrderRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
+    permission_classes=[IsAuthenticated, IsOwner]
+    queryset=Order.objects.all()
+    serializer_class=OrderUpdateSerailizer
+    lookup_field = "code"
+
+    def get_queryset(self):
+        queryset=Order.objects.filter(user=self.request.user)
+        return queryset
