@@ -16,7 +16,7 @@ class User(AbstractUser):
     profile_image = models.ImageField(upload_to=profile_image_path, null=True,blank=True)
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username']
+    REQUIRED_FIELDS = ['username', 'phone_number']
 
 class Location(models.Model):
     place = models.CharField( max_length=50, null=True,blank=True)
