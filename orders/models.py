@@ -1,11 +1,12 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
-from django.db.models.signals import post_save, post_delete
+from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.db import models
 from project.settings import AUTH_USER_MODEL
 from django.contrib.auth import get_user_model
 from django.contrib.auth.signals import user_logged_in
-from .utils import generate_code
+from djoser.signals import user_registered
+from .utils import generate_code, cart_generate_code
 from menus.models import MenuItem, Ingredient, MenuItemIngredient, ComponentChoises, COMPONENT_CHOICES
 
 # Create your models here.
@@ -23,7 +24,7 @@ CART_STATUS = (
 
 
 class Order(models.Model):
-    code = models.CharField(max_length=15, default=generate_code(15))
+    code = models.CharField(max_length=20, default=cart_generate_code)
     user = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.CASCADE)
     cart = models.ForeignKey('Cart', related_name="order_cart", on_delete=models.SET_NULL, null=True, blank=True)
     status = models.CharField(max_length=20, choices=ORDER_STATUS)
@@ -54,7 +55,7 @@ def create_order_items(sender, instance, created, **kwargs):
 
 
 class Cart(models.Model):
-    code = models.CharField(max_length=9, default=generate_code(9))
+    code = models.CharField(max_length=10, default=generate_code)
     user = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.CASCADE)
     status = models.CharField(max_length=20, choices=CART_STATUS)
 
@@ -74,6 +75,11 @@ def user_logged_in_handler(sender, request, user, **kwargs):
     if not Cart.objects.filter(user=user, status='In_Progress').exists():
         Cart.objects.create(user=user, status='In_Progress')
 
+@receiver(user_registered)
+def user_registered_handler(user, request, **kwargs):
+    print("Signal handler called for user registration.")
+    if not Cart.objects.filter(user=user, status='In_Progress').exists():
+        Cart.objects.create(user=user, status='In_Progress')
 
 @receiver(post_save, sender=Cart)
 def create_new_cart_order_on_submit(sender, instance, created, **kwargs):
