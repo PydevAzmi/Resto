@@ -25,7 +25,6 @@ from django.conf import settings
 urlpatterns = [
     path("api/", include("api.urls", namespace="api")),
     path("admin/", admin.site.urls),
-    path("auth/", include('rest_framework.urls')),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root = settings.STATIC_ROOT)
