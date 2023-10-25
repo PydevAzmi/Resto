@@ -123,7 +123,7 @@ class MenuItemSerializer(serializers.ModelSerializer):
     
 
     def update(self, instance, validated_data):
-        if validated_data['ingredients']:
+        if 'ingredients' in validated_data:
             ingredients_data = validated_data.pop('ingredients')
             # clean the quantity list
             quantity_list = validated_data.pop('quantity_list', len(ingredients_data)*"1,")
