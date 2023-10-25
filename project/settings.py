@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     # third-party apps
     'rest_framework',
     'djoser',
+    'rest_framework_simplejwt.token_blacklist',
     'django_filters',
     "corsheaders",
 ]
@@ -146,14 +147,22 @@ MEDIA_ROOT  = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+from datetime import timedelta
+
 SIMPLE_JWT = {
-   'AUTH_HEADER_TYPES': ('JWT',),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=10),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=30),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+    "UPDATE_LAST_LOGIN": True,
+    "AUTH_HEADER_TYPES": ('JWT',),
+    "TOKEN_OBTAIN_SERIALIZER": "accounts.serializers.MyTokenObtainPairSerializer",
 }
 
 REST_FRAMEWORK = {
     
     "DEFAULT_AUTHENTICATION_CLASSES" : [
-        #'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
 
