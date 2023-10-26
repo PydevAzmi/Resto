@@ -3,8 +3,8 @@ from accounts.models import Location
 from project.settings import AUTH_USER_MODEL
 
 STATUS = (
-    ("In_progress", "In_progress"),
-    ("Reserved", "Reserved"),
+    ("In_progres", "In_progres"),
+    ("Confirmed", "Confirmed"),
     ("Canceled", "Canceled"),
 )
 
@@ -15,6 +15,7 @@ class Branch(models.Model):
     phone_num = models.CharField(max_length=50)
     open_at = models.TimeField()
     closed_at = models.TimeField()
+    guests_per_half_an_hour = models.IntegerField(default=40)
 
     def __str__(self):
         return f"{self.name}"
@@ -23,7 +24,7 @@ class Reservation(models.Model):
     user = models.ForeignKey(AUTH_USER_MODEL, related_name="user", on_delete=models.CASCADE)
     branch = models.ForeignKey(Branch, related_name="branch", on_delete=models.CASCADE)
     guests = models.IntegerField(default=1)
-    time = models.TimeField(max_length=50)
+    time = models.TimeField()
     day = models.DateField()
     status = models.CharField(choices=STATUS ,max_length=50)
     
