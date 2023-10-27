@@ -3,9 +3,8 @@ from django.shortcuts import get_object_or_404
 from rest_framework.exceptions import ValidationError
 from .serializers import (
     CartItemSerailizer, CartItemDetailSerailizer, CartUpdateSerailizer, CartSerailizer,
-    OrderItemDetailSerailizer, OrderSerailizer, OrderUpdateSerailizer,
-    CustomizationSerializer, CustomizationUpdateSerializer,
-    SpecialInstructionsSerializer )
+    OrderItemDetailSerailizer, OrderSerailizer, SpecialInstructionsSerializer,
+    CustomizationSerializer, CustomizationUpdateSerializer, OrderUpdateSerailizer )
 
 from .models import Cart, CartItemDetail, Order, OrderItemDetail, Customization, SpecialInstructions
 from .permissions import IsOwner
@@ -99,8 +98,12 @@ class SpecialInstructionsRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
         return queryset
 
 class OrderItemDetailViewApi(generics.ListAPIView):
-    queryset=OrderItemDetail.objects.all()
     serializer_class=OrderItemDetailSerailizer
+    def get_queryset(self):
+        code=self.kwargs['code']
+        order=Order.objects.get(code=code, user=self.request.user )
+        queryset=OrderItemDetail.objects.filter(order=order )
+        return queryset
 
         
 class OrderViewApi(generics.ListAPIView):

@@ -14,7 +14,8 @@ urlpatterns = [
     path("cart-item/<int:item_pk>/customize/", views.CustomizationListAPIView.as_view(), name= "customization-list"),
     path("cart-item/<int:item_pk>/customize/<int:pk>/",
           views.CustomizationRetrieveUpdateAPIView.as_view(), name= "customization-retrive"),
-    path("order-detail/", views.OrderItemDetailViewApi.as_view(), name= "order-items-list" ),
+    
     path("order/", views.OrderViewApi.as_view(), name= "order-list" ),
-    path("order/<str:code>", views.OrderRetrieveUpdateAPIView.as_view(), name= "order-retrieve" ),
+    path("order/<str:code>/", views.OrderRetrieveUpdateAPIView.as_view(), name= "order-retrieve" ),
+    path("order/<str:code>/order-detail/", views.OrderItemDetailViewApi.as_view(), name= "order-items-list" ),
 ]
