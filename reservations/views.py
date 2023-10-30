@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from rest_framework import generics
+from menus.permissions import IsAdminOrReadOnly
 from .serializers import BranchSerializer, ReservationSerializer
 from .models import Branch, Reservation
 
@@ -7,6 +8,7 @@ from .models import Branch, Reservation
 class BranchListCreateAPIView(generics.ListCreateAPIView):
     serializer_class = BranchSerializer
     queryset = Branch.objects.all()
+    permission_clases =[IsAdminOrReadOnly,]
 
 
 class ReservationListCreateAPIView(generics.ListCreateAPIView):

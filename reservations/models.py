@@ -27,6 +27,8 @@ class Reservation(models.Model):
     time = models.TimeField()
     day = models.DateField()
     status = models.CharField(choices=STATUS ,max_length=50)
-    
+
+
     def __str__(self):
-        return f"{self.user}, {self.branch}"
+        return f"{self.user} {self.branch} *{self.guests}"
+    
